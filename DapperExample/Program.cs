@@ -104,6 +104,14 @@ namespace DapperExample
               }).Distinct().ToList();
 
 
+            //Transaction İşlemi
+            con.Open();
+            var transaction = con.BeginTransaction();
+            con.Execute("update BankAccount set Money=50 where id=1",transaction:transaction);
+            con.Execute("update BankAccounts set Money=15050 where id=3", transaction: transaction);
+            transaction.Commit();
+
+
 
 
 
