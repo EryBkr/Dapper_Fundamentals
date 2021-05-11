@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "85p5c5uvi0YeKqfPPaqKVKXwgoHvjFwIIrVcsOyORlYLuBNtFQdpALJqZlQVTO43mOU5wlUniuZ+IYXJO4xNNw==",
+  "dgSpecHash": "FvVdv7YGWVmcoBUDEtIR4hiqRzTBa2imD6y7zpEDZLcO1gHuSL+It9TTmC7rtF4YLpR5BP0hTxwGGSxafyYkiA==",
   "success": true,
   "projectFilePath": "C:\\Users\\Blackerback\\OneDrive\\Masaüstü\\DapperExample\\DapperExample\\DapperExample.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Blackerback\\.nuget\\packages\\dapper\\2.0.90\\dapper.2.0.90.nupkg.sha512",
+    "C:\\Users\\Blackerback\\.nuget\\packages\\dapper.contrib\\2.0.78\\dapper.contrib.2.0.78.nupkg.sha512",
     "C:\\Users\\Blackerback\\.nuget\\packages\\microsoft.netcore.platforms\\3.1.0\\microsoft.netcore.platforms.3.1.0.nupkg.sha512",
     "C:\\Users\\Blackerback\\.nuget\\packages\\microsoft.win32.registry\\4.7.0\\microsoft.win32.registry.4.7.0.nupkg.sha512",
     "C:\\Users\\Blackerback\\.nuget\\packages\\runtime.native.system.data.sqlclient.sni\\4.7.0\\runtime.native.system.data.sqlclient.sni.4.7.0.nupkg.sha512",

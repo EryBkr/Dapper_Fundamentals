@@ -22,3 +22,4 @@ C:\Users\Blackerback\OneDrive\Masaüstü\DapperExample\DapperExample\obj\Debug\n
 C:\Users\Blackerback\OneDrive\Masaüstü\DapperExample\DapperExample\obj\Debug\net5.0\DapperExample.pdb
 C:\Users\Blackerback\OneDrive\Masaüstü\DapperExample\DapperExample\obj\Debug\net5.0\DapperExample.genruntimeconfig.cache
 C:\Users\Blackerback\OneDrive\Masaüstü\DapperExample\DapperExample\bin\Debug\net5.0\Dapper.dll
+C:\Users\Blackerback\OneDrive\Masaüstü\DapperExample\DapperExample\bin\Debug\net5.0\Dapper.Contrib.dll

@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Dapper.Contrib.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -14,7 +15,7 @@ namespace DapperExample
             var con = new SqlConnection(); //MSSQL Connection
             con.ConnectionString = @"Server=(localdb)\MSSQLLocalDB;Database=DapperDb;Trusted_Connection=true;";
 
-
+            #region Metodlar
             ////Dapper Execute Kullanarak parametresiz data ekledik
             //con.Execute("insert into Products values('Iphone',4000,30)"); 
 
@@ -84,66 +85,84 @@ namespace DapperExample
 
             ////Gerekli şartları sağlayan 1 adet datayı alırız, yoksa hata alırız,herhangi bir data yoksa hata fırlatmaz
             //var typeSafeProductSingleDefault = con.QuerySingleOrDefault<Product>("select * from Products where id=1");
+            #endregion
 
-
+            #region JOIN
             //JOIN İşlemi
-            var productDictionary = new Dictionary<int, Product>();
+            //var productDictionary = new Dictionary<int, Product>();
 
-            var products = con.Query<Product, ProductCategory, Product>(@"select * from Products inner join ProductCategory on Products.Id=ProductCategory.ProductId", (product, productCategory) =>
-              {
-                  //Bu kısımda yaptığımız işlem ürünlere ait kategorilerin ProductCategories listesine eklensin ve bir çok kategoriye ait ürün birden fazla gelmesin.
-                  Product otherProduct;
-                  if (!productDictionary.TryGetValue(product.Id, out otherProduct)) //Id daha önce eklenmemiş ise
-                  {
-                      otherProduct = product;
-                      otherProduct.ProductCategories = new List<ProductCategory>();
-                      productDictionary.Add(product.Id, product);
-                  }
-                  otherProduct.ProductCategories.Add(productCategory);
-                  return otherProduct;
-              }).Distinct().ToList();
+            //var products = con.Query<Product, ProductCategory, Product>(@"select * from Products inner join ProductCategory on Products.Id=ProductCategory.ProductId", (product, productCategory) =>
+            //  {
+            //      //Bu kısımda yaptığımız işlem ürünlere ait kategorilerin ProductCategories listesine eklensin ve bir çok kategoriye ait ürün birden fazla gelmesin.
+            //      Product otherProduct;
+            //      if (!productDictionary.TryGetValue(product.Id, out otherProduct)) //Id daha önce eklenmemiş ise
+            //      {
+            //          otherProduct = product;
+            //          otherProduct.ProductCategories = new List<ProductCategory>();
+            //          productDictionary.Add(product.Id, product);
+            //      }
+            //      otherProduct.ProductCategories.Add(productCategory);
+            //      return otherProduct;
+            //  }).Distinct().ToList();
+            #endregion
 
-
+            #region Transaction
             //Transaction İşlemi
             //con.Open();
             //var transaction = con.BeginTransaction();
             //con.Execute("update BankAccount set Money=50 where id=1", transaction: transaction);
             //con.Execute("update BankAccounts set Money=15050 where id=3", transaction: transaction);
             //transaction.Commit();
+            #endregion
+
+            #region Store Procedure
+            ////Store Procedure
+            ////Şeklinde yazdığımız store procedure leri kullanacağız
+            ////create proc sp_addProduct
+            ////@name nvarchar(50),
+            ////@price decimal(18, 3),
+            ////@stock int
+            ////as
+            ////begin
+            ////insert into Products values(@name, @price, @stock)
+            ////end
+            //con.Execute("sp_addProduct",new 
+            //{
+            //    name="Kitap",
+            //    price=30,
+            //    stock=22
+            //},commandType:System.Data.CommandType.StoredProcedure);  //Databasemizde yer alan store procedure ismini vererek kaydetme işlemini gerçekleştirdik.Parametre olarakta bunun store procedure olduğunu bunu sql komutu olarak algılamaması gerektiğini söyledik
+
+            //con.Execute("sp_updateProduct", new
+            //{
+            //    name = "Kalem",
+            //    price = 25,
+            //    stock = 22,
+            //    id=11
+            //}, commandType: System.Data.CommandType.StoredProcedure);
+
+            //con.Execute("sp_deleteProduct", new
+            //{
+            //    id = 11
+            //}, commandType: System.Data.CommandType.StoredProcedure);
 
 
-            //Store Procedure
-            //Şeklinde yazdığımız store procedure leri kullanacağız
-            //create proc sp_addProduct
-            //@name nvarchar(50),
-            //@price decimal(18, 3),
-            //@stock int
-            //as
-            //begin
-            //insert into Products values(@name, @price, @stock)
-            //end
-            con.Execute("sp_addProduct",new 
-            {
-                name="Kitap",
-                price=30,
-                stock=22
-            },commandType:System.Data.CommandType.StoredProcedure);  //Databasemizde yer alan store procedure ismini vererek kaydetme işlemini gerçekleştirdik.Parametre olarakta bunun store procedure olduğunu bunu sql komutu olarak algılamaması gerektiğini söyledik
+            //var productsSP=con.Query<Product>("sp_getProducts",commandType: System.Data.CommandType.StoredProcedure);
+            #endregion
 
-            con.Execute("sp_updateProduct", new
-            {
-                name = "Kalem",
-                price = 25,
-                stock = 22,
-                id=11
-            }, commandType: System.Data.CommandType.StoredProcedure);
+            #region Contrib
+            var product=con.Get<Product>(id: 2); //Contrib sayesinde daha rahat bir şekilde aldık
+            var productsContrib = con.GetAll<Product>();
+            con.Insert<Product>(new Product {Name="Yeni",Price=300,Stock=4 });
+            con.Update<Product>(new Product { Id=17,Name = "Yeni Güncellenmiş", Price = 300, Stock = 17 });
+            con.Delete<Product>(new Product {Id=17});
 
-            con.Execute("sp_deleteProduct", new
-            {
-                id = 11
-            }, commandType: System.Data.CommandType.StoredProcedure);
+            //Tablodaki tüm kayıtları siler
+            con.DeleteAll<ProductCategory>();
+            con.DeleteAll<Product>();
+            #endregion
 
 
-            var productsSP=con.Query<Product>("sp_getProducts",commandType: System.Data.CommandType.StoredProcedure);
 
 
 
@@ -151,14 +170,16 @@ namespace DapperExample
         }
     }
 
+    [Table("Products")]
     class Product
     {
+        [Key]
         public int Id { get; set; }
         public string Name { get; set; }
         public decimal Price { get; set; }
         public int Stock { get; set; }
 
-        public List<ProductCategory> ProductCategories { get; set; }
+        //public List<ProductCategory> ProductCategories { get; set; }
     }
 
     class ProductCategory
