@@ -1,6 +1,8 @@
 ﻿using Dapper;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 
 namespace DapperExample
 {
@@ -56,32 +58,51 @@ namespace DapperExample
             //con.Execute("delete from Products where id=@id",new {id=3});
 
 
-            //İlk Kaydın ilk sütununu bize geri döndürür
-            var id = con.ExecuteScalar("select * from Products");
+            ////İlk Kaydın ilk sütununu bize geri döndürür
+            //var id = con.ExecuteScalar("select * from Products");
 
-            //İlk Kaydın istenen sütununu bize geri döndürür,generic olarakta tanımlayabiliriz
-            var name = con.ExecuteScalar<string>("select name from Products");
+            ////İlk Kaydın istenen sütununu bize geri döndürür,generic olarakta tanımlayabiliriz
+            //var name = con.ExecuteScalar<string>("select name from Products");
 
-            //Filtre sonucu gelen ilk datanın gerekli sütununu geri döndürdük
-            var getName = con.ExecuteScalar<string>("select name from Products where id=@id", new { id = 3 });
+            ////Filtre sonucu gelen ilk datanın gerekli sütununu geri döndürdük
+            //var getName = con.ExecuteScalar<string>("select name from Products where id=@id", new { id = 3 });
 
-            //IEnumerable<dynamic> dönecektir.dynamic veri tipi JS de ki var keyword u gibi değişken tipteki dataları atamamızı sağlar
-            var products = con.Query("select * from Products");
+            ////IEnumerable<dynamic> dönecektir.dynamic veri tipi JS de ki var keyword u gibi değişken tipteki dataları atamamızı sağlar
+            //var products = con.Query("select * from Products");
 
-            //Tip güvenli olarak ürünleri aldık --> IEnumarable<Product> 
-            var typeSafeProducts = con.Query<Product>("select * from Products");
+            ////Tip güvenli olarak ürünleri aldık --> IEnumarable<Product> 
+            //var typeSafeProducts = con.Query<Product>("select * from Products");
 
-            //İlk datayı aldık.Birden fazla data gelirse şayet yine ilkini bize verecektir
-            var typeSafeProductFirst=con.QueryFirst<Product>("select * from Products");
+            ////İlk datayı aldık.Birden fazla data gelirse şayet yine ilkini bize verecektir
+            //var typeSafeProductFirst=con.QueryFirst<Product>("select * from Products");
 
-            //Gerekli şartları sağlayan 1 adet datayı alırız, yoksa hata alırız
-            var typeSafeProductSingle = con.QuerySingle<Product>("select * from Products where id=1");
+            ////Gerekli şartları sağlayan 1 adet datayı alırız, yoksa hata alırız
+            //var typeSafeProductSingle = con.QuerySingle<Product>("select * from Products where id=1");
 
-            //İlk datayı aldık.Birden fazla data gelirse şayet yine ilkini bize verecektir,herhangi bir data yoksa hata fırlatmaz
-            var typeSafeProductFirstDefault = con.QueryFirstOrDefault<Product>("select * from Products");
+            ////İlk datayı aldık.Birden fazla data gelirse şayet yine ilkini bize verecektir,herhangi bir data yoksa hata fırlatmaz
+            //var typeSafeProductFirstDefault = con.QueryFirstOrDefault<Product>("select * from Products");
 
-            //Gerekli şartları sağlayan 1 adet datayı alırız, yoksa hata alırız,herhangi bir data yoksa hata fırlatmaz
-            var typeSafeProductSingleDefault = con.QuerySingleOrDefault<Product>("select * from Products where id=1");
+            ////Gerekli şartları sağlayan 1 adet datayı alırız, yoksa hata alırız,herhangi bir data yoksa hata fırlatmaz
+            //var typeSafeProductSingleDefault = con.QuerySingleOrDefault<Product>("select * from Products where id=1");
+
+
+            //JOIN İşlemi
+            var productDictionary = new Dictionary<int, Product>();
+
+            var products = con.Query<Product, ProductCategory, Product>(@"select * from Products inner join ProductCategory on Products.Id=ProductCategory.ProductId", (product, productCategory) =>
+              {
+                  //Bu kısımda yaptığımız işlem ürünlere ait kategorilerin ProductCategories listesine eklensin ve bir çok kategoriye ait ürün birden fazla gelmesin.
+                  Product otherProduct;
+                  if (!productDictionary.TryGetValue(product.Id, out otherProduct)) //Id daha önce eklenmemiş ise
+                  {
+                      otherProduct = product;
+                      otherProduct.ProductCategories = new List<ProductCategory>();
+                      productDictionary.Add(product.Id, product);
+                  }
+                  otherProduct.ProductCategories.Add(productCategory);
+                  return otherProduct;
+              }).Distinct().ToList();
+
 
 
 
@@ -96,5 +117,27 @@ namespace DapperExample
         public string Name { get; set; }
         public decimal Price { get; set; }
         public int Stock { get; set; }
+
+        public List<ProductCategory> ProductCategories { get; set; }
+    }
+
+    class ProductCategory
+    {
+        public int Id { get; set; }
+
+        public int CategoryId { get; set; }
+        public Category Category { get; set; }
+
+
+        public int ProductId { get; set; }
+        public Product Product { get; set; }
+    }
+
+    class Category
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+
+        public List<ProductCategory> ProductCategories { get; set; }
     }
 }
