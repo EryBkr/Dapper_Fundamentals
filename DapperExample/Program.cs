@@ -105,13 +105,45 @@ namespace DapperExample
 
 
             //Transaction İşlemi
-            con.Open();
-            var transaction = con.BeginTransaction();
-            con.Execute("update BankAccount set Money=50 where id=1",transaction:transaction);
-            con.Execute("update BankAccounts set Money=15050 where id=3", transaction: transaction);
-            transaction.Commit();
+            //con.Open();
+            //var transaction = con.BeginTransaction();
+            //con.Execute("update BankAccount set Money=50 where id=1", transaction: transaction);
+            //con.Execute("update BankAccounts set Money=15050 where id=3", transaction: transaction);
+            //transaction.Commit();
 
 
+            //Store Procedure
+            //Şeklinde yazdığımız store procedure leri kullanacağız
+            //create proc sp_addProduct
+            //@name nvarchar(50),
+            //@price decimal(18, 3),
+            //@stock int
+            //as
+            //begin
+            //insert into Products values(@name, @price, @stock)
+            //end
+            con.Execute("sp_addProduct",new 
+            {
+                name="Kitap",
+                price=30,
+                stock=22
+            },commandType:System.Data.CommandType.StoredProcedure);  //Databasemizde yer alan store procedure ismini vererek kaydetme işlemini gerçekleştirdik.Parametre olarakta bunun store procedure olduğunu bunu sql komutu olarak algılamaması gerektiğini söyledik
+
+            con.Execute("sp_updateProduct", new
+            {
+                name = "Kalem",
+                price = 25,
+                stock = 22,
+                id=11
+            }, commandType: System.Data.CommandType.StoredProcedure);
+
+            con.Execute("sp_deleteProduct", new
+            {
+                id = 11
+            }, commandType: System.Data.CommandType.StoredProcedure);
+
+
+            var productsSP=con.Query<Product>("sp_getProducts",commandType: System.Data.CommandType.StoredProcedure);
 
 
 
