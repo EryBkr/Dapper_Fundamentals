@@ -162,10 +162,6 @@ namespace DapperExample
             con.DeleteAll<Product>();
             #endregion
 
-
-
-
-
             Console.WriteLine("İşlem Tamamlandı");
         }
     }
